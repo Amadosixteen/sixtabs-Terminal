@@ -15,7 +15,8 @@ zellij --layout dev
 
 | Tab | Contents | Falls back to |
 |---|---|---|
-| `system` | host summary, CPU graph, full resource monitor | `fastfetch` → `neofetch` → `uname`; `btop` → `htop` → `top` |
+| `system` | host summary with the distro's ASCII logo | `fastfetch` → `neofetch` → `hostnamectl` |
+| `monitor` | CPU, memory, disks, network, processes | `btop` → `htop` → `top` |
 | `docker` | interactive container management | `lazydocker` → `docker stats` → shell, with a diagnosis if the daemon is unreachable |
 | `db` | database TUI client | `lazysql` → shell with install hint |
 | `logs` | follows an application log | `lnav` → `less +F` → `tail -F` |
@@ -50,7 +51,7 @@ cd zellij-config
 ./install.sh
 ```
 
-The installer symlinks into `$XDG_CONFIG_HOME` (or `~/.config`) and puts four
+The installer symlinks into `$XDG_CONFIG_HOME` (or `~/.config`) and puts five
 helper scripts in `~/.local/bin`. Anything already there is **moved to
 `<file>.backup-<timestamp>`**, never deleted. Re-running is safe.
 
@@ -66,6 +67,7 @@ shell profile, or per invocation.
 |---|---|---|
 | `ZJ_PROJECTS_DIR` | `~/Projects`, else the current directory | `git` and `projects` tabs, `git-overview` |
 | `ZJ_LOG_FILE` | newest `*.log` under `ZJ_PROJECTS_DIR` (depth 4) | `logs` tab |
+| `ZJ_FETCH_DISTRO` | the `ID` from `/etc/os-release` | `system` tab |
 
 ```bash
 export ZJ_PROJECTS_DIR="$HOME/code"
@@ -86,7 +88,7 @@ with no `cwd` inherit the session's working directory.
 
 ## Helper scripts
 
-All four work standalone, outside Zellij.
+All five work standalone, outside Zellij.
 
 - **`git-overview [dir]`** — table of branch, last commit and dirty-file count
   for every git repository directly under `dir`. Lists repository *roots* only,
@@ -95,6 +97,10 @@ All four work standalone, outside Zellij.
   argument it uses `$ZJ_LOG_FILE`, otherwise the most recently modified `*.log`
   it can find. Prints instructions and drops to a shell rather than exiting.
 - **`zj-cd [dir]`** — starts an interactive shell in the projects directory.
+- **`zj-fetch`** — compact host summary. neofetch's default output is ~39
+  lines and simply scrolls out of a short pane; this trims the info column
+  and then leaves you at a shell. `ZJ_FETCH_DISTRO` picks the logo (append
+  `_small`, e.g. `linuxmint_small`, for panes narrower than ~80 columns).
 - **`zj-docker`** — checks that the Docker daemon is actually reachable before
   starting `lazydocker`, and names the cause when it is not. It distinguishes
   *account not in the `docker` group* from the far more confusing case where the
@@ -174,10 +180,11 @@ use a Nerd Font.
 │   ├── git-overview              git status table for a folder of repos
 │   ├── zj-logs                   log viewer with discovery + fallbacks
 │   ├── zj-cd                     shell in the projects directory
-│   └── zj-docker                 Docker TUI with a daemon-reachability check
+│   ├── zj-docker                 Docker TUI with a daemon-reachability check
+│   └── zj-fetch                  compact host summary with the distro logo
 ├── zellij/
 │   ├── config.kdl                only what differs from the defaults
-│   ├── layouts/dev.kdl           the six-tab workspace
+│   ├── layouts/dev.kdl           the seven-tab workspace
 │   └── themes/debian.kdl         "debian" (red accent) and "tango"
 ├── lazygit/config.yml
 ├── lazydocker/config.yml

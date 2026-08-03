@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────
+#  zj-fetch — compact host summary for the "system" tab.
+#
+#  Why this exists: neofetch's default output is ~39 lines tall. Dropped
+#  into a short pane it simply scrolls off, so the logo you wanted to see
+#  is the first thing to disappear. This trims the info column and asks
+#  for the distro's *small* ASCII variant, which is about a third
+#  shorter, then leaves you at a shell in the same pane.
+#
+#  Logo selection, in order of precedence:
+#    1. $ZJ_FETCH_DISTRO   e.g. ZJ_FETCH_DISTRO=arch, or append "_small"
+#       (linuxmint_small, debian_small, ubuntu_small...) when your pane is
+#       narrower than ~80 columns and the full art will not fit
+#    2. "<ID>" from /etc/os-release — the full, recognisable distro art
+#    3. neofetch's own auto-detection
+#
+#  The full art needs roughly 80x20. This is why the layout gives the
+#  "system" tab a pane of its own instead of splitting it with a monitor.
+#
+#  fastfetch is preferred when installed: it is faster and already
+#  compact. Set ZJ_FETCH=neofetch to force the older tool.
+# ─────────────────────────────────────────────────────────────────────
+set -uo pipefail
+
+hold() {
+    exec "${SHELL:-/bin/sh}"
+}
+
+pick_distro() {
+    if [ -n "${ZJ_FETCH_DISTRO:-}" ]; then
+        printf '%s\n' "$ZJ_FETCH_DISTRO"
+    elif [ -r /etc/os-release ]; then
+        # shellcheck disable=SC1091
+        id=$(. /etc/os-release 2>/dev/null && printf '%s' "${ID:-}")
+        [ -n "$id" ] && printf '%s\n' "$id"
+    fi
+}
+
+tool="${ZJ_FETCH:-}"
+if [ -z "$tool" ]; then
+    if command -v fastfetch >/dev/null 2>&1; then
+        tool=fastfetch
+    elif command -v neofetch >/dev/null 2>&1; then
+        tool=neofetch
+    fi
+fi
+
+case "$tool" in
+    fastfetch)
+        fastfetch 2>/dev/null || fastfetch --logo none 2>/dev/null
+        ;;
+    neofetch)
+        distro=$(pick_distro)
+        # Trim the info column so the logo is what fills the pane.
+        set -- --disable theme icons gpu resolution de wm wm_theme term_font cpu_usage
+        [ -n "$distro" ] && set -- --ascii_distro "$distro" "$@"
+        neofetch "$@" 2>/dev/null
+        ;;
+    *)
+        echo
+        command -v hostnamectl >/dev/null 2>&1 && hostnamectl 2>/dev/null || uname -a
+        echo
+        echo 'Install fastfetch or neofetch for a nicer summary.'
+        ;;
+esac
+
+echo
+hold

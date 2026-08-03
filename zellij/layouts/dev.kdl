@@ -38,21 +38,22 @@ layout {
         }
     }
 
-    // Sizes are percentages, never fixed cell counts. A fixed `size=22`
-    // here makes this whole tab fail to build on an 80-column terminal.
+    // One pane per tab, deliberately.
+    //
+    // A distro's full ASCII art needs about 80x20, and btop refuses to
+    // draw below 80x16. Splitting a ~120-column window between them
+    // starves both: the logo scrolls out of view and btop prints
+    // "Terminal size too small". Separate tabs give each the whole area,
+    // so both work even on an 80x24 terminal.
     tab name="system" focus=true {
-        pane split_direction="horizontal" {
-            pane split_direction="vertical" size="30%" {
-                pane name="host" size="45%" command="sh" {
-                    args "-c" "if command -v fastfetch >/dev/null 2>&1; then fastfetch; elif command -v neofetch >/dev/null 2>&1; then neofetch --disable theme icons gpu; else echo; uname -a; echo; fi; exec ${SHELL:-/bin/sh}"
-                }
-                pane name="cpu" command="sh" {
-                    args "-c" "if command -v btop >/dev/null 2>&1; then btop --preset 1; elif command -v htop >/dev/null 2>&1; then htop; else top; fi; echo; echo 'monitor exited - dropping to a shell'; exec ${SHELL:-/bin/sh}"
-                }
-            }
-            pane name="monitor (mem - disks - net - proc)" command="sh" {
-                args "-c" "if command -v btop >/dev/null 2>&1; then btop; elif command -v htop >/dev/null 2>&1; then htop; else top; fi; echo; echo 'monitor exited - dropping to a shell'; exec ${SHELL:-/bin/sh}"
-            }
+        pane name="host" command="sh" {
+            args "-c" "if command -v zj-fetch >/dev/null 2>&1; then exec zj-fetch; else echo 'zj-fetch not on PATH - run install.sh, or add this repo bin/ to PATH.'; exec ${SHELL:-/bin/sh}; fi"
+        }
+    }
+
+    tab name="monitor" {
+        pane name="cpu - mem - disks - net - proc" command="sh" {
+            args "-c" "if command -v btop >/dev/null 2>&1; then btop; elif command -v htop >/dev/null 2>&1; then htop; else top; fi; echo; echo 'monitor exited - dropping to a shell'; exec ${SHELL:-/bin/sh}"
         }
     }
 

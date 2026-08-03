@@ -16,7 +16,8 @@ zellij --layout dev
 
 | Tab | Contenido | Alternativas si falta la herramienta |
 |---|---|---|
-| `system` | resumen del equipo, gráfica de CPU, monitor completo | `fastfetch` → `neofetch` → `uname`; `btop` → `htop` → `top` |
+| `system` | resumen del equipo con el logo ASCII de tu distro | `fastfetch` → `neofetch` → `hostnamectl` |
+| `monitor` | CPU, memoria, discos, red, procesos | `btop` → `htop` → `top` |
 | `docker` | gestión interactiva de contenedores | `lazydocker` → `docker stats` → shell, con diagnóstico si el demonio no responde |
 | `db` | cliente TUI de bases de datos | `lazysql` → shell indicando cómo instalarlo |
 | `logs` | sigue un log de aplicación | `lnav` → `less +F` → `tail -F` |
@@ -51,7 +52,7 @@ cd zellij-config
 ```
 
 El instalador crea enlaces simbólicos en `$XDG_CONFIG_HOME` (o `~/.config`) y
-coloca cuatro scripts en `~/.local/bin`. Lo que ya existiera se **mueve a
+coloca cinco scripts en `~/.local/bin`. Lo que ya existiera se **mueve a
 `<archivo>.backup-<fecha>`**, nunca se borra. Volver a ejecutarlo es seguro.
 
 `./install.sh --uninstall` quita los enlaces y restaura el backup más reciente.
@@ -64,6 +65,7 @@ Todo se controla con dos variables de entorno opcionales.
 |---|---|---|
 | `ZJ_PROJECTS_DIR` | `~/Projects`, si no el directorio actual | tabs `git` y `projects`, `git-overview` |
 | `ZJ_LOG_FILE` | el `*.log` más reciente bajo `ZJ_PROJECTS_DIR` (profundidad 4) | tab `logs` |
+| `ZJ_FETCH_DISTRO` | el `ID` de `/etc/os-release` | tab `system` |
 
 ```bash
 export ZJ_PROJECTS_DIR="$HOME/code"
@@ -85,7 +87,7 @@ heredan el directorio de la sesión.
 
 ## Scripts auxiliares
 
-Los cuatro funcionan por su cuenta, fuera de Zellij.
+Los cinco funcionan por su cuenta, fuera de Zellij.
 
 - **`git-overview [dir]`** — tabla con rama, último commit y número de archivos
   modificados de cada repositorio git que cuelgue de `dir`. Lista solo *raíces*
@@ -96,6 +98,11 @@ Los cuatro funcionan por su cuenta, fuera de Zellij.
   recientemente. Si no encuentra nada, imprime instrucciones y te deja un shell
   en lugar de cerrarse.
 - **`zj-cd [dir]`** — abre un shell interactivo en la carpeta de proyectos.
+- **`zj-fetch`** — resumen compacto del equipo. La salida por defecto de
+  neofetch ocupa ~39 líneas y se va de scroll en un panel bajo; este recorta
+  la columna de datos y luego te deja un shell. `ZJ_FETCH_DISTRO` elige el
+  logo (añade `_small`, p. ej. `linuxmint_small`, para paneles de menos de
+  ~80 columnas).
 - **`zj-docker`** — comprueba que el demonio de Docker es realmente accesible
   antes de lanzar `lazydocker`, y nombra la causa cuando no lo es. Distingue
   *la cuenta no está en el grupo `docker`* del caso mucho más confuso en el que
@@ -178,10 +185,11 @@ corresponda en `zellij/config.kdl` (`xclip` para X11, `wl-copy` para Wayland,
 │   ├── git-overview              tabla de estado git de una carpeta de repos
 │   ├── zj-logs                   visor de logs con descubrimiento y fallbacks
 │   ├── zj-cd                     shell en la carpeta de proyectos
-│   └── zj-docker                 TUI de Docker con chequeo de accesibilidad
+│   ├── zj-docker                 TUI de Docker con chequeo de accesibilidad
+│   └── zj-fetch                  resumen del equipo con el logo de la distro
 ├── zellij/
 │   ├── config.kdl                solo lo que difiere de los valores por defecto
-│   ├── layouts/dev.kdl           el workspace de seis tabs
+│   ├── layouts/dev.kdl           el workspace de siete tabs
 │   └── themes/debian.kdl         "debian" (acento rojo) y "tango"
 ├── lazygit/config.yml
 ├── lazydocker/config.yml

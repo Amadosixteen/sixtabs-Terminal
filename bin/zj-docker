@@ -52,6 +52,16 @@ if ! docker info >/dev/null 2>&1; then
                 echo "  yet access was refused. Check the socket permissions:"
                 echo "      ls -l $SOCKET"
             elif id -nG "$USER" 2>/dev/null | tr ' ' '\n' | grep -qx docker; then
+                # The account has the group, this process does not. `sg` is
+                # setuid root, so it can start a process WITH the group even
+                # though we cannot add it to ourselves. Retry through it once.
+                if [ -z "${ZJ_DOCKER_SG_RETRY:-}" ] && command -v sg >/dev/null 2>&1; then
+                    echo '  This process lacks the docker group; retrying through `sg docker`.'
+                    echo
+                    export ZJ_DOCKER_SG_RETRY=1
+                    exec sg docker -c "ZJ_DOCKER_SG_RETRY=1 exec ${0}"
+                fi
+
                 echo "  Your ACCOUNT is in the docker group, but THIS PROCESS is not."
                 echo
                 echo "  Supplementary groups are assigned when a process is created and"
@@ -61,6 +71,11 @@ if ! docker info >/dev/null 2>&1; then
                 echo "  Opening a new terminal window usually does NOT fix this: new"
                 echo "  windows attach to the same long-lived terminal server process."
                 echo
+                if [ -n "${ZJ_DOCKER_SG_RETRY:-}" ]; then
+                    echo "  Retrying through \`sg docker\` did not help either, so the"
+                    echo "  problem is not just this process's group list."
+                    echo
+                fi
                 echo "  Fix, most thorough first:"
                 echo "      1. Log out and log back in."
                 echo "      2. Or kill the terminal server so it respawns:"
