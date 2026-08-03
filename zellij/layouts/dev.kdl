@@ -4,7 +4,7 @@
 //      zellij --layout dev
 //
 //  Tabs
-//    system    host summary + CPU graph + full resource monitor
+//    monitor   CPU, memory, disks, network, processes
 //    docker    interactive container management
 //    db        database TUI client
 //    logs      follow an application log
@@ -38,20 +38,11 @@ layout {
         }
     }
 
-    // One pane per tab, deliberately.
-    //
-    // A distro's full ASCII art needs about 80x20, and btop refuses to
-    // draw below 80x16. Splitting a ~120-column window between them
-    // starves both: the logo scrolls out of view and btop prints
-    // "Terminal size too small". Separate tabs give each the whole area,
-    // so both work even on an 80x24 terminal.
-    tab name="system" focus=true {
-        pane name="host" command="sh" {
-            args "-c" "if command -v zj-fetch >/dev/null 2>&1; then exec zj-fetch; else echo 'zj-fetch not on PATH - run install.sh, or add this repo bin/ to PATH.'; exec ${SHELL:-/bin/sh}; fi"
-        }
-    }
-
-    tab name="monitor" {
+    // One pane per tab, deliberately. btop refuses to draw below 80x16,
+    // so sharing a ~120-column window with anything else starves it into
+    // printing "Terminal size too small". With the whole tab to itself it
+    // renders even on an 80x24 terminal.
+    tab name="monitor" focus=true {
         pane name="cpu - mem - disks - net - proc" command="sh" {
             args "-c" "if command -v btop >/dev/null 2>&1; then btop; elif command -v htop >/dev/null 2>&1; then htop; else top; fi; echo; echo 'monitor exited - dropping to a shell'; exec ${SHELL:-/bin/sh}"
         }

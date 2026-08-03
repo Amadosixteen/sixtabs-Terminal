@@ -94,7 +94,7 @@ LINKS=(
     "$REPO_DIR/lazygit/config.yml|$CONFIG_HOME/lazygit/config.yml"
     "$REPO_DIR/lazydocker/config.yml|$CONFIG_HOME/lazydocker/config.yml"
 )
-SCRIPTS=(git-overview zj-logs zj-cd zj-docker zj-fetch)
+SCRIPTS=(git-overview zj-logs zj-cd zj-docker)
 
 # ── uninstall ─────────────────────────────────────────────────────────
 if [ "$UNINSTALL" -eq 1 ]; then
