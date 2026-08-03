@@ -1,6 +1,6 @@
 <div align="center">
 
-# zellij-config
+# sixtabs
 
 **Your entire dev environment. One command. Zero configuration.**
 
@@ -44,8 +44,8 @@ Clone it on any Linux machine and it just... fits.
 ## Get it
 
 ```bash
-git clone https://github.com/YOUR_USER/zellij-config.git
-cd zellij-config
+git clone https://github.com/Amadosixteen/sixtabs-Terminal.git
+cd sixtabs-Terminal
 ./install.sh
 ```
 
