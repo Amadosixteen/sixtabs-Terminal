@@ -16,7 +16,7 @@ zellij --layout dev
 | Tab | Contents | Falls back to |
 |---|---|---|
 | `system` | host summary, CPU graph, full resource monitor | `fastfetch` → `neofetch` → `uname`; `btop` → `htop` → `top` |
-| `docker` | interactive container management | `lazydocker` → `docker stats` → shell |
+| `docker` | interactive container management | `lazydocker` → `docker stats` → shell, with a diagnosis if the daemon is unreachable |
 | `db` | database TUI client | `lazysql` → shell with install hint |
 | `logs` | follows an application log | `lnav` → `less +F` → `tail -F` |
 | `git` | one-line status of every repo in your projects folder, plus a shell | shell |
@@ -50,7 +50,7 @@ cd zellij-config
 ./install.sh
 ```
 
-The installer symlinks into `$XDG_CONFIG_HOME` (or `~/.config`) and puts three
+The installer symlinks into `$XDG_CONFIG_HOME` (or `~/.config`) and puts four
 helper scripts in `~/.local/bin`. Anything already there is **moved to
 `<file>.backup-<timestamp>`**, never deleted. Re-running is safe.
 
@@ -86,7 +86,7 @@ with no `cwd` inherit the session's working directory.
 
 ## Helper scripts
 
-All three work standalone, outside Zellij.
+All four work standalone, outside Zellij.
 
 - **`git-overview [dir]`** — table of branch, last commit and dirty-file count
   for every git repository directly under `dir`. Lists repository *roots* only,
@@ -95,6 +95,22 @@ All three work standalone, outside Zellij.
   argument it uses `$ZJ_LOG_FILE`, otherwise the most recently modified `*.log`
   it can find. Prints instructions and drops to a shell rather than exiting.
 - **`zj-cd [dir]`** — starts an interactive shell in the projects directory.
+- **`zj-docker`** — checks that the Docker daemon is actually reachable before
+  starting `lazydocker`, and names the cause when it is not. It distinguishes
+  *account not in the `docker` group* from the far more confusing case where the
+  account **is** in the group but the running process is not — see below.
+
+### The `docker` group trap
+
+Supplementary groups are assigned when a process is created and cannot be added
+to a running one. If your login session started before `usermod -aG docker` ran,
+every shell it spawns lacks the group, while `id` cheerfully reports you as a
+member. Opening a "new" terminal usually does not help either, because new
+windows attach to the same long-lived terminal server process.
+
+`zj-docker` compares the process's real group list (`id -G`) against the
+account's (`id -nG`) and tells you which case you are in. The fix is to log out
+and back in, `pkill gnome-terminal-server`, or `newgrp docker` for one shell.
 
 ## Credentials
 
@@ -157,7 +173,8 @@ use a Nerd Font.
 ├── bin/
 │   ├── git-overview              git status table for a folder of repos
 │   ├── zj-logs                   log viewer with discovery + fallbacks
-│   └── zj-cd                     shell in the projects directory
+│   ├── zj-cd                     shell in the projects directory
+│   └── zj-docker                 Docker TUI with a daemon-reachability check
 ├── zellij/
 │   ├── config.kdl                only what differs from the defaults
 │   ├── layouts/dev.kdl           the six-tab workspace

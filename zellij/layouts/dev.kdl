@@ -58,7 +58,7 @@ layout {
 
     tab name="docker" {
         pane name="containers" command="sh" {
-            args "-c" "if command -v lazydocker >/dev/null 2>&1; then lazydocker; elif command -v docker >/dev/null 2>&1; then echo 'lazydocker not found - falling back to docker stats'; echo 'install: https://github.com/jesseduffield/lazydocker'; echo; docker stats; else echo 'docker is not installed on this machine.'; fi; echo; echo 'dropping to a shell - rerun with: lazydocker'; exec ${SHELL:-/bin/sh}"
+            args "-c" "if command -v zj-docker >/dev/null 2>&1; then exec zj-docker; else echo 'zj-docker not on PATH - run install.sh, or add this repo bin/ to PATH.'; exec ${SHELL:-/bin/sh}; fi"
         }
     }
 

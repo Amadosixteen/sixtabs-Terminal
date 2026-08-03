@@ -17,7 +17,7 @@ zellij --layout dev
 | Tab | Contenido | Alternativas si falta la herramienta |
 |---|---|---|
 | `system` | resumen del equipo, gráfica de CPU, monitor completo | `fastfetch` → `neofetch` → `uname`; `btop` → `htop` → `top` |
-| `docker` | gestión interactiva de contenedores | `lazydocker` → `docker stats` → shell |
+| `docker` | gestión interactiva de contenedores | `lazydocker` → `docker stats` → shell, con diagnóstico si el demonio no responde |
 | `db` | cliente TUI de bases de datos | `lazysql` → shell indicando cómo instalarlo |
 | `logs` | sigue un log de aplicación | `lnav` → `less +F` → `tail -F` |
 | `git` | estado en una línea de cada repo de tu carpeta de proyectos, más un shell | shell |
@@ -51,7 +51,7 @@ cd zellij-config
 ```
 
 El instalador crea enlaces simbólicos en `$XDG_CONFIG_HOME` (o `~/.config`) y
-coloca tres scripts en `~/.local/bin`. Lo que ya existiera se **mueve a
+coloca cuatro scripts en `~/.local/bin`. Lo que ya existiera se **mueve a
 `<archivo>.backup-<fecha>`**, nunca se borra. Volver a ejecutarlo es seguro.
 
 `./install.sh --uninstall` quita los enlaces y restaura el backup más reciente.
@@ -85,7 +85,7 @@ heredan el directorio de la sesión.
 
 ## Scripts auxiliares
 
-Los tres funcionan por su cuenta, fuera de Zellij.
+Los cuatro funcionan por su cuenta, fuera de Zellij.
 
 - **`git-overview [dir]`** — tabla con rama, último commit y número de archivos
   modificados de cada repositorio git que cuelgue de `dir`. Lista solo *raíces*
@@ -96,6 +96,22 @@ Los tres funcionan por su cuenta, fuera de Zellij.
   recientemente. Si no encuentra nada, imprime instrucciones y te deja un shell
   en lugar de cerrarse.
 - **`zj-cd [dir]`** — abre un shell interactivo en la carpeta de proyectos.
+- **`zj-docker`** — comprueba que el demonio de Docker es realmente accesible
+  antes de lanzar `lazydocker`, y nombra la causa cuando no lo es. Distingue
+  *la cuenta no está en el grupo `docker`* del caso mucho más confuso en el que
+  la cuenta **sí** está pero el proceso en ejecución no.
+
+### La trampa del grupo `docker`
+
+Los grupos suplementarios se asignan al crear el proceso y no se pueden añadir a
+uno en marcha. Si tu sesión arrancó antes de ejecutar `usermod -aG docker`, todo
+lo que lance esa sesión carece del grupo, mientras `id` te informa tan tranquilo
+de que sí eres miembro. Abrir una terminal "nueva" tampoco suele servir: las
+ventanas nuevas se enganchan al mismo proceso servidor de terminal, que es viejo.
+
+`zj-docker` compara los grupos reales del proceso (`id -G`) con los de la cuenta
+(`id -nG`) y te dice en cuál de los dos casos estás. La solución es cerrar sesión
+y volver a entrar, `pkill gnome-terminal-server`, o `newgrp docker` para un shell.
 
 ## Credenciales
 
@@ -161,7 +177,8 @@ corresponda en `zellij/config.kdl` (`xclip` para X11, `wl-copy` para Wayland,
 ├── bin/
 │   ├── git-overview              tabla de estado git de una carpeta de repos
 │   ├── zj-logs                   visor de logs con descubrimiento y fallbacks
-│   └── zj-cd                     shell en la carpeta de proyectos
+│   ├── zj-cd                     shell en la carpeta de proyectos
+│   └── zj-docker                 TUI de Docker con chequeo de accesibilidad
 ├── zellij/
 │   ├── config.kdl                solo lo que difiere de los valores por defecto
 │   ├── layouts/dev.kdl           el workspace de seis tabs

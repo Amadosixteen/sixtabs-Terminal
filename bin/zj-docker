@@ -1,0 +1,99 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────
+#  zj-docker — open a Docker TUI, after checking that Docker is usable.
+#
+#  Used by the "docker" tab of the `dev` layout. Without this check,
+#  lazydocker responds to a permission problem with an endless
+#  "Retry count: N" loop and a raw socket error, which says nothing
+#  about the actual cause or the fix.
+#
+#  The interesting failure it diagnoses: supplementary groups are fixed
+#  at process creation. If your login session (or a persistent
+#  gnome-terminal-server) started before you were added to the `docker`
+#  group, every shell it spawns lacks that group -- and opening a "new"
+#  terminal does not help, because new windows attach to the same old
+#  server process. `id` will happily show you in the group while the
+#  running process is not. That is why this compares the two.
+#
+#  Viewer preference: lazydocker -> docker stats -> shell.
+# ─────────────────────────────────────────────────────────────────────
+set -uo pipefail
+
+SOCKET="${DOCKER_HOST:-/var/run/docker.sock}"
+SOCKET="${SOCKET#unix://}"
+
+fallback_shell() {
+    echo
+    echo 'Dropping to a shell. Rerun this pane with: zj-docker'
+    exec "${SHELL:-/bin/sh}"
+}
+
+if ! command -v docker >/dev/null 2>&1; then
+    echo 'Docker is not installed on this machine.'
+    echo 'See https://docs.docker.com/engine/install/'
+    fallback_shell
+fi
+
+# Is the daemon reachable at all?
+if ! docker info >/dev/null 2>&1; then
+    err=$(docker info 2>&1)
+
+    if printf '%s' "$err" | grep -qi 'permission denied'; then
+        echo 'Docker is running, but this process may not talk to it.'
+        echo
+
+        # Groups this process actually has, vs. groups the account has.
+        proc_groups=$(id -G)
+        docker_gid=$(getent group docker 2>/dev/null | cut -d: -f3)
+
+        if [ -n "$docker_gid" ]; then
+            if printf ' %s ' "$proc_groups" | grep -q " $docker_gid "; then
+                echo "  Odd: this process IS in the docker group (gid $docker_gid),"
+                echo "  yet access was refused. Check the socket permissions:"
+                echo "      ls -l $SOCKET"
+            elif id -nG "$USER" 2>/dev/null | tr ' ' '\n' | grep -qx docker; then
+                echo "  Your ACCOUNT is in the docker group, but THIS PROCESS is not."
+                echo
+                echo "  Supplementary groups are assigned when a process is created and"
+                echo "  cannot be added afterwards. Your session started before you were"
+                echo "  added to the group, so everything it spawns still lacks it."
+                echo
+                echo "  Opening a new terminal window usually does NOT fix this: new"
+                echo "  windows attach to the same long-lived terminal server process."
+                echo
+                echo "  Fix, most thorough first:"
+                echo "      1. Log out and log back in."
+                echo "      2. Or kill the terminal server so it respawns:"
+                echo "           pkill gnome-terminal-server"
+                echo "      3. Or, for this shell only:  newgrp docker"
+            else
+                echo "  Your account is not in the docker group. Add it, then log out"
+                echo "  and back in:"
+                echo "      sudo usermod -aG docker \"\$USER\""
+            fi
+        else
+            echo '  There is no docker group on this system.'
+            echo "  Check the socket permissions:  ls -l $SOCKET"
+        fi
+    else
+        echo 'Cannot reach the Docker daemon:'
+        echo
+        printf '%s\n' "$err" | head -5 | sed 's/^/  /'
+        echo
+        echo '  Is it running?   systemctl status docker'
+    fi
+
+    fallback_shell
+fi
+
+# Docker works. Pick the best viewer.
+if command -v lazydocker >/dev/null 2>&1; then
+    lazydocker
+else
+    echo 'lazydocker not found - falling back to docker stats'
+    echo 'install: https://github.com/jesseduffield/lazydocker'
+    echo
+    docker stats
+fi
+
+fallback_shell
