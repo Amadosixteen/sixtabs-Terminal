@@ -35,6 +35,22 @@ default_layout "default"
 // Turn it back on once your layouts are stable, if you want it.
 session_serialization false
 
+// What happens when the terminal window goes away (you click the X, the
+// emulator crashes, SSH drops). Zellij's default is "detach": the session
+// and every process in it stay alive in the background, unreachable.
+//
+// That default is how you end up with runaway TUIs. A btop with no tty
+// attached does not idle — it redraws in a tight loop at ~90% of a core,
+// forever, and nothing on screen tells you it is happening. Seven closed
+// windows once cost seven pegged cores here.
+//
+// "quit" makes closing the window mean what it looks like it means: the
+// session dies and takes its processes with it. The trade is real —
+// you lose the ability to close a terminal and pick the workspace back
+// up tomorrow. Detach on purpose with Ctrl-o d when you want that;
+// closing the window is then unambiguously "I am done".
+on_force_close "quit"
+
 // Note on the file picker: Zellij's shipped default pins it to `cwd "/"`,
 // which drops you at the filesystem root every time. This config leaves
 // the alias unset so the picker opens in the current working directory
