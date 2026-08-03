@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────
+#  zj-logs — open a log file in the best viewer available.
+#
+#  Used by the "logs" tab of the `dev` layout. The original version of
+#  that layout hardcoded one developer's Laravel log path, so the pane
+#  died instantly on any other machine (and on the same machine once the
+#  project moved). This resolves a target at runtime instead.
+#
+#  Which file is opened, in order of precedence:
+#    1. the path given as $1
+#    2. $ZJ_LOG_FILE
+#    3. the most recently modified *.log under $ZJ_PROJECTS_DIR
+#       (or ~/Projects, or the current directory), max depth 4
+#
+#  Viewer, in order of preference: lnav -> less +F -> tail -F
+#
+#  If nothing is found the pane stays alive and prints how to fix it,
+#  rather than exiting and leaving a dead pane behind.
+#
+#  Usage:
+#      zj-logs
+#      zj-logs /var/log/syslog
+#      ZJ_LOG_FILE=~/app/storage/logs/laravel.log zj-logs
+# ─────────────────────────────────────────────────────────────────────
+set -uo pipefail
+
+search_root() {
+    if [ -n "${ZJ_PROJECTS_DIR:-}" ]; then
+        printf '%s\n' "$ZJ_PROJECTS_DIR"
+    elif [ -d "$HOME/Projects" ]; then
+        printf '%s\n' "$HOME/Projects"
+    else
+        printf '%s\n' "$PWD"
+    fi
+}
+
+newest_log() {
+    local root
+    root=$(search_root)
+    [ -d "$root" ] || return 1
+    # -printf is GNU find; fall back to a portable (slower) sort if absent.
+    if find --version >/dev/null 2>&1; then
+        find "$root" -maxdepth 4 -type f -name '*.log' -size +0 -printf '%T@ %p\n' 2>/dev/null \
+            | sort -rn | head -1 | cut -d' ' -f2-
+    else
+        find "$root" -maxdepth 4 -type f -name '*.log' -size +0 2>/dev/null \
+            | while read -r f; do printf '%s %s\n' "$(stat -f %m "$f" 2>/dev/null || echo 0)" "$f"; done \
+            | sort -rn | head -1 | cut -d' ' -f2-
+    fi
+}
+
+target="${1:-${ZJ_LOG_FILE:-}}"
+[ -n "$target" ] || target=$(newest_log)
+
+if [ -z "$target" ] || [ ! -f "$target" ]; then
+    cat <<EOF
+
+  No log file to follow.
+
+  Looked for: ${1:-${ZJ_LOG_FILE:-the newest *.log under $(search_root)}}
+
+  Point this pane at a file with either of:
+
+      ZJ_LOG_FILE=/path/to/app.log zellij --layout dev
+      zj-logs /path/to/app.log
+
+  Or set ZJ_PROJECTS_DIR so the automatic search looks in the right tree.
+
+EOF
+    # Keep the pane usable instead of dying.
+    exec "${SHELL:-/bin/sh}"
+fi
+
+printf 'Following: %s\n\n' "$target"
+
+if command -v lnav >/dev/null 2>&1; then
+    exec lnav "$target"
+elif command -v less >/dev/null 2>&1; then
+    exec less +F "$target"
+else
+    exec tail -n 200 -F "$target"
+fi

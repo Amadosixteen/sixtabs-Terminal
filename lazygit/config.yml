@@ -1,0 +1,40 @@
+# ─────────────────────────────────────────────────────────────────────
+#  lazygit — https://github.com/jesseduffield/lazygit
+#
+#  Only non-default settings, chosen to match the Zellij theme (dark
+#  background, red accent) and to behave well inside a Zellij pane.
+#
+#  Full reference:
+#  https://github.com/jesseduffield/lazygit/blob/master/docs/Config.md
+# ─────────────────────────────────────────────────────────────────────
+gui:
+  # Side-by-side diffs need width; inside a split Zellij pane they wrap
+  # badly. Flip to true if you usually run lazygit fullscreen.
+  splitDiff: auto
+  showFileTree: true
+  nerdFontsVersion: ""       # set to "3" if your terminal font has glyphs
+  theme:
+    activeBorderColor:
+      - "#D70A53"            # Debian red, same accent as the Zellij theme
+      - bold
+    inactiveBorderColor:
+      - "#555753"
+    selectedLineBgColor:
+      - "#1c1c1c"
+
+git:
+  paging:
+    colorArg: always
+    # Left at the default on purpose. Setting `pager: delta ...` here is a
+    # popular tip, but if delta is not installed lazygit shows empty diffs
+    # with no explanation. Uncomment only after `delta --version` works:
+    #
+    # pager: delta --dark --paging=never
+  # Do not auto-fetch on a timer: on a laptop or a metered link this is
+  # a surprising source of network traffic and credential prompts.
+  autoFetch: false
+
+# Confirm before discarding work. The default already asks, this makes
+# it explicit so nobody removes it by accident.
+confirmOnQuit: false
+promptToReturnFromSubprocess: false

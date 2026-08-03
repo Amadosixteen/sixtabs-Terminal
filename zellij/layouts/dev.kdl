@@ -1,0 +1,93 @@
+// ─────────────────────────────────────────────────────────────────────
+//  dev — general purpose development workspace.
+//
+//      zellij --layout dev
+//
+//  Tabs
+//    system    host summary + CPU graph + full resource monitor
+//    docker    interactive container management
+//    db        database TUI client
+//    logs      follow an application log
+//    git       status of every repo in your projects folder + a shell
+//    projects  a plain shell in your projects folder
+//
+//  Portability
+//    Nothing here is tied to a particular machine or user. Zellij's KDL
+//    parser does not expand environment variables in `cwd` or `args`,
+//    so anything that needs a runtime value is wrapped in `sh -c` or
+//    delegated to a helper script in bin/. Panes with no `cwd` inherit
+//    the directory you launched zellij from.
+//
+//  Optional environment variables
+//    ZJ_PROJECTS_DIR   folder holding your repos   (default: ~/Projects,
+//                      falling back to the current directory)
+//    ZJ_LOG_FILE       log for the "logs" tab      (default: newest *.log
+//                      found under ZJ_PROJECTS_DIR)
+//
+//  Every command pane degrades gracefully: if a tool is missing you get
+//  an explanation and a working shell, never a dead pane.
+// ─────────────────────────────────────────────────────────────────────
+layout {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+
+    // Sizes are percentages, never fixed cell counts. A fixed `size=22`
+    // here makes this whole tab fail to build on an 80-column terminal.
+    tab name="system" focus=true {
+        pane split_direction="horizontal" {
+            pane split_direction="vertical" size="30%" {
+                pane name="host" size="45%" command="sh" {
+                    args "-c" "if command -v fastfetch >/dev/null 2>&1; then fastfetch; elif command -v neofetch >/dev/null 2>&1; then neofetch --disable theme icons gpu; else echo; uname -a; echo; fi; exec ${SHELL:-/bin/sh}"
+                }
+                pane name="cpu" command="sh" {
+                    args "-c" "if command -v btop >/dev/null 2>&1; then btop --preset 1; elif command -v htop >/dev/null 2>&1; then htop; else top; fi; echo; echo 'monitor exited - dropping to a shell'; exec ${SHELL:-/bin/sh}"
+                }
+            }
+            pane name="monitor (mem - disks - net - proc)" command="sh" {
+                args "-c" "if command -v btop >/dev/null 2>&1; then btop; elif command -v htop >/dev/null 2>&1; then htop; else top; fi; echo; echo 'monitor exited - dropping to a shell'; exec ${SHELL:-/bin/sh}"
+            }
+        }
+    }
+
+    tab name="docker" {
+        pane name="containers" command="sh" {
+            args "-c" "if command -v lazydocker >/dev/null 2>&1; then lazydocker; elif command -v docker >/dev/null 2>&1; then echo 'lazydocker not found - falling back to docker stats'; echo 'install: https://github.com/jesseduffield/lazydocker'; echo; docker stats; else echo 'docker is not installed on this machine.'; fi; echo; echo 'dropping to a shell - rerun with: lazydocker'; exec ${SHELL:-/bin/sh}"
+        }
+    }
+
+    tab name="db" {
+        pane name="database client" command="sh" {
+            args "-c" "if command -v lazysql >/dev/null 2>&1; then lazysql; else echo 'lazysql not found.'; echo 'install: https://github.com/jorgerojas26/lazysql'; echo 'then copy lazysql/config.toml.example to ~/.config/lazysql/config.toml'; fi; echo; echo 'dropping to a shell - rerun with: lazysql'; exec ${SHELL:-/bin/sh}"
+        }
+    }
+
+    tab name="logs" {
+        pane name="application log" command="sh" {
+            args "-c" "if command -v zj-logs >/dev/null 2>&1; then exec zj-logs; else echo 'zj-logs not on PATH - run install.sh, or add this repo bin/ to PATH.'; exec ${SHELL:-/bin/sh}; fi"
+        }
+    }
+
+    tab name="git" {
+        pane split_direction="horizontal" {
+            pane name="status of all projects" size="60%" command="sh" {
+                args "-c" "if command -v git-overview >/dev/null 2>&1; then watch -n 5 -t -c git-overview; else echo 'git-overview not on PATH - run install.sh, or add this repo bin/ to PATH.'; fi; echo; exec ${SHELL:-/bin/sh}"
+            }
+            pane name="shell (cd into a repo, then run lazygit)" size="40%" command="sh" {
+                args "-c" "if command -v zj-cd >/dev/null 2>&1; then exec zj-cd; else exec ${SHELL:-/bin/sh}; fi"
+            }
+        }
+    }
+
+    tab name="projects" {
+        pane command="sh" {
+            args "-c" "if command -v zj-cd >/dev/null 2>&1; then exec zj-cd; else exec ${SHELL:-/bin/sh}; fi"
+        }
+    }
+}

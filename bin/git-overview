@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────
+#  git-overview — one-line git status for every repository in a folder.
+#
+#  Used by the "git" tab of the `dev` layout (wrapped in `watch`), but it
+#  is a perfectly good standalone command.
+#
+#  Which folder is scanned, in order of precedence:
+#    1. the directory given as $1
+#    2. $ZJ_PROJECTS_DIR
+#    3. ~/Projects, if it exists
+#    4. the current working directory
+#
+#  Usage:
+#      git-overview                 # scan the resolved default
+#      git-overview ~/code          # scan a specific folder
+#      ZJ_PROJECTS_DIR=~/work git-overview
+# ─────────────────────────────────────────────────────────────────────
+set -uo pipefail
+
+resolve_root() {
+    if [ "$#" -ge 1 ] && [ -n "${1:-}" ]; then
+        printf '%s\n' "$1"
+    elif [ -n "${ZJ_PROJECTS_DIR:-}" ]; then
+        printf '%s\n' "$ZJ_PROJECTS_DIR"
+    elif [ -d "$HOME/Projects" ]; then
+        printf '%s\n' "$HOME/Projects"
+    else
+        printf '%s\n' "$PWD"
+    fi
+}
+
+root=$(resolve_root "$@")
+
+if [ ! -d "$root" ]; then
+    printf 'git-overview: not a directory: %s\n' "$root" >&2
+    exit 1
+fi
+
+if ! command -v git >/dev/null 2>&1; then
+    printf 'git-overview: git is not installed\n' >&2
+    exit 1
+fi
+
+printf '%-24s %-24s %-42s %s\n' "PROJECT" "BRANCH" "LAST COMMIT" "CHANGES"
+printf '%0.s-' $(seq 1 100); echo
+
+found=0
+for dir in "$root"/*/; do
+    [ -e "$dir" ] || continue                 # no match: the glob stayed literal
+
+    # Only list repository roots. `rev-parse` alone would also match every
+    # plain subfolder when $root itself happens to live inside a repo.
+    top=$(git -C "$dir" rev-parse --show-toplevel 2>/dev/null) || continue
+    [ "$top" = "$(cd "$dir" && pwd -P)" ] || continue
+    found=1
+
+    name=$(basename "$dir")
+    branch=$(git -C "$dir" branch --show-current 2>/dev/null)
+    [ -n "$branch" ] || branch="(detached)"
+    changes=$(git -C "$dir" status --porcelain 2>/dev/null | wc -l)
+    last=$(git -C "$dir" log -1 --pretty='%s (%cr)' 2>/dev/null | cut -c1-40)
+    [ -n "$last" ] || last="(no commits yet)"
+
+    if [ "$changes" -eq 0 ]; then
+        state="\033[32mclean\033[0m"
+    else
+        state="\033[33m${changes} file(s)\033[0m"
+    fi
+
+    printf "%-24s %-24s %-42s ${state}\n" "$name" "$branch" "$last"
+done
+
+if [ "$found" -eq 0 ]; then
+    printf '\nNo git repositories directly under: %s\n' "$root"
+    printf 'Point it elsewhere with:  ZJ_PROJECTS_DIR=/path/to/code git-overview\n'
+fi

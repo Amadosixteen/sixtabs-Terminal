@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────
+#  zj-cd — start an interactive shell in the projects directory.
+#
+#  Zellij layouts cannot expand environment variables in `cwd` fields
+#  (KDL is parsed literally), which is why the original layout had
+#  absolute paths baked in. Delegating to this script keeps the layout
+#  portable: the resolution happens at runtime, in a shell.
+#
+#  Directory resolution, in order of precedence:
+#    1. the directory given as $1
+#    2. $ZJ_PROJECTS_DIR
+#    3. ~/Projects, if it exists
+#    4. $PWD — i.e. wherever you launched zellij from
+#
+#  Usage:
+#      zj-cd
+#      zj-cd ~/code
+# ─────────────────────────────────────────────────────────────────────
+set -uo pipefail
+
+if [ "$#" -ge 1 ] && [ -n "${1:-}" ]; then
+    target="$1"
+elif [ -n "${ZJ_PROJECTS_DIR:-}" ]; then
+    target="$ZJ_PROJECTS_DIR"
+elif [ -d "$HOME/Projects" ]; then
+    target="$HOME/Projects"
+else
+    target="$PWD"
+fi
+
+if [ ! -d "$target" ]; then
+    printf 'zj-cd: %s does not exist, staying in %s\n\n' "$target" "$PWD" >&2
+    target="$PWD"
+fi
+
+cd "$target" || cd "$PWD" || true
+exec "${SHELL:-/bin/sh}"

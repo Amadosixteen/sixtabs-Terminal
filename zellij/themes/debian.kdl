@@ -1,0 +1,47 @@
+// ─────────────────────────────────────────────────────────────────────
+//  "debian" — classic console look: Tango palette on pure black, with
+//  the official Debian red (#D70A53) as the accent colour.
+//
+//  These colours only affect Zellij's own chrome (tab bar, status bar,
+//  pane frames). Content inside a pane keeps your terminal's palette.
+//
+//  ⚠ Known trade-off, on purpose:
+//
+//  Zellij's simple theme format maps the active tab and frame accent to
+//  the `green` slot. To get a red accent, `green` is set to Debian red
+//  rather than to an actual green. Any plugin that reads `green` with
+//  "success / ok" semantics will therefore render red.
+//
+//  If that bothers you, swap in the honest Tango values commented out
+//  below and accept a green accent instead.
+// ─────────────────────────────────────────────────────────────────────
+themes {
+    debian {
+        fg      "#D3D7CF"
+        bg      "#000000"
+        black   "#000000"
+        red     "#CC0000"
+        green   "#D70A53"   // accent, not a green — see note above
+        yellow  "#C4A000"
+        blue    "#3465A4"
+        magenta "#75507B"
+        cyan    "#06989A"
+        white   "#D3D7CF"
+        orange  "#A80030"   // mode indicators (PANE, TAB, RESIZE...)
+    }
+
+    // Unmodified Tango palette — every slot means what it says.
+    tango {
+        fg      "#D3D7CF"
+        bg      "#000000"
+        black   "#000000"
+        red     "#CC0000"
+        green   "#4E9A06"
+        yellow  "#C4A000"
+        blue    "#3465A4"
+        magenta "#75507B"
+        cyan    "#06989A"
+        white   "#D3D7CF"
+        orange  "#CE5C00"
+    }
+}

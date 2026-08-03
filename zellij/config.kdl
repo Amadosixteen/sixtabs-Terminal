@@ -1,0 +1,64 @@
+// ─────────────────────────────────────────────────────────────────────
+//  Zellij configuration
+//
+//  Deliberately minimal: it only sets what actually differs from the
+//  Zellij defaults. Dumping the full default keybind table into this
+//  file (as the built-in configuration plugin does when it saves) adds
+//  ~250 lines that change nothing and make real customizations
+//  impossible to spot. If you want to see the defaults, run:
+//
+//      zellij setup --dump-config
+//
+//  Every option below is documented at https://zellij.dev/documentation
+// ─────────────────────────────────────────────────────────────────────
+
+// UI theme. Defined in themes/ — see themes/debian.kdl for the palette
+// and for a note on how the accent colour is produced.
+theme "debian"
+
+// Start plain. Load a workspace layout explicitly when you want one:
+//
+//     zellij --layout dev
+//
+// Do NOT set `default_layout "dev"` unless you really want every new
+// terminal to spawn a full monitoring stack (btop, lazydocker, lazysql,
+// lnav...). That is roughly eight extra processes per session and it is
+// the most common reason a Zellij setup "feels broken" on modest RAM.
+default_layout "default"
+
+// Session serialization writes the live layout to ~/.cache/zellij and
+// resurrects it next time. It is ON by default, and it is a trap while
+// you are iterating on layouts: Zellij restores the previously saved
+// (possibly broken) session instead of re-reading your .kdl file, with
+// dead command panes marked `start_suspended true`.
+//
+// Turn it back on once your layouts are stable, if you want it.
+session_serialization false
+
+// Note on the file picker: Zellij's shipped default pins it to `cwd "/"`,
+// which drops you at the filesystem root every time. This config leaves
+// the alias unset so the picker opens in the current working directory
+// instead. If you prefer a fixed root, add it back explicitly:
+//
+// plugins {
+//     filepicker location="zellij:strider" {
+//         cwd "/absolute/path"
+//     }
+// }
+
+// Zellij copies through the OSC 52 terminal escape sequence by default,
+// which works in most modern terminals. If copying does not reach your
+// system clipboard, uncomment the line matching your session type.
+//
+// X11:      copy_command "xclip -selection clipboard"
+// Wayland:  copy_command "wl-copy"
+// macOS:    copy_command "pbcopy"
+
+// Keep the mouse usable for selection in terminals that need it.
+// copy_on_select true
+
+// Scrollback per pane. Raise it if you tail verbose logs.
+// scroll_buffer_size 10000
+
+// Uncomment if your terminal lacks powerline/nerd-font glyphs.
+// simplified_ui true

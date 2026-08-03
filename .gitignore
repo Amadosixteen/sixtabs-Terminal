@@ -1,0 +1,23 @@
+# ─────────────────────────────────────────────────────────────────────
+#  Never commit anything holding real credentials.
+# ─────────────────────────────────────────────────────────────────────
+
+# lazysql stores connection URLs (user:password@host) in plain text.
+# Only the .example template belongs in this repo.
+lazysql/config.toml
+lazysql/saved_queries/
+
+# Local overrides
+.env
+*.local
+*.local.*
+
+# Backups written by install.sh
+*.bak
+*.backup-*
+
+# Editor / OS noise
+.DS_Store
+*~
+.idea/
+.vscode/

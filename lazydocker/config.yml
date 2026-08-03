@@ -1,0 +1,37 @@
+# ─────────────────────────────────────────────────────────────────────
+#  lazydocker — https://github.com/jesseduffield/lazydocker
+#
+#  Only non-default settings. Nothing here assumes a particular project,
+#  compose file or container name.
+#
+#  Full reference:
+#  https://github.com/jesseduffield/lazydocker/blob/master/docs/Config.md
+# ─────────────────────────────────────────────────────────────────────
+gui:
+  theme:
+    activeBorderColor:
+      - "#D70A53"            # Debian red, same accent as the Zellij theme
+      - bold
+    inactiveBorderColor:
+      - "#555753"
+  # Container CPU/memory graphs. Useful, but they poll the Docker API;
+  # set to false on a busy or low-memory machine.
+  showAllContainers: true
+  returnImmediately: false
+  wrapMainPanel: true
+
+logs:
+  # Last N lines when opening a container's logs. The default (unbounded)
+  # can take seconds to render for long-running containers.
+  timestamps: false
+  since: '60m'
+  tail: '200'
+
+stats:
+  graphs:
+    - caption: CPU (%)
+      statPath: DerivedStats.CPUPercentage
+      color: cyan
+    - caption: Memory (%)
+      statPath: DerivedStats.MemoryPercentage
+      color: green

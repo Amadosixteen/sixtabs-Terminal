@@ -1,0 +1,48 @@
+# ─────────────────────────────────────────────────────────────────────
+#  lazysql saved connections — TEMPLATE
+#
+#  Copy to ~/.config/lazysql/config.toml and fill in your own values:
+#
+#      cp lazysql/config.toml.example ~/.config/lazysql/config.toml
+#
+#  install.sh does this for you, and never overwrites an existing file.
+#
+#  ⚠ The real config.toml stores credentials in plain text. It is listed
+#    in .gitignore for that reason — never commit it. If you have already
+#    committed one, rotate those passwords: git history keeps them.
+#
+#  URL format:  provider://user:password@host:port/database
+#  Supported providers: mysql, postgres, sqlite3, mssql
+#
+#  Ports below are the ones a Docker stack publishes on the host, which
+#  is why several MySQL instances can coexist on 3306/3307/3308.
+# ─────────────────────────────────────────────────────────────────────
+
+[[database]]
+Name = 'local app (mysql)'
+Provider = 'mysql'
+DBName = 'CHANGE_ME_DBNAME'
+URL = 'mysql://CHANGE_ME_USER:CHANGE_ME_PASSWORD@127.0.0.1:3306/CHANGE_ME_DBNAME'
+Commands = []
+
+# A second stack on another published port.
+# [[database]]
+# Name = 'other stack (mysql)'
+# Provider = 'mysql'
+# DBName = 'CHANGE_ME_DBNAME'
+# URL = 'mysql://CHANGE_ME_USER:CHANGE_ME_PASSWORD@127.0.0.1:3307/CHANGE_ME_DBNAME'
+# Commands = []
+
+# [[database]]
+# Name = 'local postgres'
+# Provider = 'postgres'
+# DBName = 'CHANGE_ME_DBNAME'
+# URL = 'postgres://CHANGE_ME_USER:CHANGE_ME_PASSWORD@127.0.0.1:5432/CHANGE_ME_DBNAME?sslmode=disable'
+# Commands = []
+
+# [[database]]
+# Name = 'local sqlite'
+# Provider = 'sqlite3'
+# DBName = 'app'
+# URL = './database/database.sqlite'
+# Commands = []
