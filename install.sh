@@ -94,7 +94,7 @@ LINKS=(
     "$REPO_DIR/lazygit/config.yml|$CONFIG_HOME/lazygit/config.yml"
     "$REPO_DIR/lazydocker/config.yml|$CONFIG_HOME/lazydocker/config.yml"
 )
-SCRIPTS=(git-overview zj-logs zj-cd zj-docker)
+SCRIPTS=(git-overview zj-logs zj-cd zj-docker zdev)
 
 # ── uninstall ─────────────────────────────────────────────────────────
 if [ "$UNINSTALL" -eq 1 ]; then
@@ -155,4 +155,4 @@ for t in btop lazydocker lazysql lnav lazygit fastfetch neofetch; do
 done
 
 step "Done"
-info "Try it with:  zellij --layout dev"
+info "Try it with:  zdev"

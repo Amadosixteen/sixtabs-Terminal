@@ -1,7 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────
 //  dev — general purpose development workspace.
 //
-//      zellij --layout dev
+//      zdev
+//
+//  Launch it with `zdev` (bin/zdev), not `zellij --layout dev`: the
+//  latter creates a new randomly-named session every time and Zellij
+//  never reaps detached ones.
 //
 //  Tabs
 //    monitor   CPU, memory, disks, network, processes

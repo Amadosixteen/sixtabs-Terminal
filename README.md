@@ -20,7 +20,7 @@ Terminal three for `git status`, again. Terminal four... where was terminal four
 This repo replaces the ritual with a keystroke:
 
 ```
-zellij --layout dev
+zdev
 ```
 
 ```
@@ -52,6 +52,14 @@ cd sixtabs-Terminal
 That's the whole setup. `./install.sh --dry-run` first if you like watching
 before touching — and everything it replaces is backed up, never deleted.
 `./install.sh --uninstall` puts it all back.
+
+`zdev` is one of the helper scripts the installer links into `~/.local/bin`.
+It attaches to a single session named `dev`, creating it only if it is not
+already running. That matters more than it sounds: `zellij --layout dev`
+mints a *new* randomly-named session every time, Zellij never reaps detached
+ones, and the panes inside a session nobody is attached to keep running. Run
+it once per terminal for an afternoon and you are quietly paying for a dozen
+workspaces you cannot see.
 
 Only [Zellij](https://zellij.dev) is required. Everything else is optional:
 

@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────
+#  zdev — open the dev workspace, reusing one session instead of
+#         spawning a new one every time.
+#
+#  `zellij --layout dev` always creates a fresh session with a random
+#  name (implacable-tiger, awesome-pheasant...). Zellij never reaps
+#  detached sessions, so running it once per terminal quietly leaves a
+#  pile of live sessions behind — each holding whatever its panes were
+#  running. Seven forgotten sessions were once measured here holding
+#  seven TUIs at ~90% of a core apiece.
+#
+#  This attaches to a single named session ("dev") and only creates it
+#  if it is not already there, so the workspace is a place you return
+#  to rather than something you accumulate.
+#
+#  Note on flags: `zellij --session X --layout Y` does NOT create a
+#  named session — with --session, --layout means "add these tabs to
+#  the session named X", which fails if X does not exist. Creating a
+#  named session from a layout is `-s NAME -n LAYOUT`.
+#
+#  Configuration:
+#    ZJ_SESSION   session name to reuse   (default: dev)
+#    ZJ_LAYOUT    layout to create it with (default: dev)
+#
+#  Usage:
+#      zdev
+#      ZJ_SESSION=api zdev        # a second, separate workspace
+#      ZJ_LAYOUT=default zdev
+# ─────────────────────────────────────────────────────────────────────
+set -uo pipefail
+
+session="${ZJ_SESSION:-dev}"
+layout="${ZJ_LAYOUT:-dev}"
+
+if ! command -v zellij >/dev/null 2>&1; then
+    cat <<'EOF'
+
+  zellij is not installed, or not on PATH.
+
+  Install it with your package manager, or:
+
+      cargo install --locked zellij
+
+  See https://zellij.dev/documentation/installation
+
+EOF
+    exit 1
+fi
+
+# Nesting a session inside another is almost never what you meant, and
+# the inner one is easy to lose track of. Say so instead of doing it.
+if [ -n "${ZELLIJ:-}" ]; then
+    printf '\n  Already inside a zellij session (%s).\n\n' "${ZELLIJ_SESSION_NAME:-unknown}"
+    printf '  Detach first with Ctrl-o d, then run zdev again.\n\n'
+    exit 1
+fi
+
+if zellij list-sessions --short 2>/dev/null | grep -qx -- "$session"; then
+    exec zellij attach -- "$session"
+fi
+
+exec zellij -s "$session" -n "$layout"

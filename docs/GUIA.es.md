@@ -71,18 +71,20 @@ en lugar de cerrarse.
 | `ZJ_PROJECTS_DIR` | `~/Projects`, si no el directorio actual | tabs `git` y `projects`, `git-overview`, búsqueda de `zj-logs` |
 | `ZJ_LOG_FILE` | el `*.log` más reciente bajo `ZJ_PROJECTS_DIR` (prof. 4) | tab `logs` |
 | `ZJ_BIN_DIR` | `~/.local/bin` | dónde enlaza los scripts `install.sh` |
+| `ZJ_SESSION` | `dev` | sesión a la que se conecta `zdev`, o que crea |
+| `ZJ_LAYOUT` | `dev` | layout con el que `zdev` la crea |
 
 En tu perfil de shell, o por invocación:
 
 ```bash
-ZJ_LOG_FILE=/var/log/syslog zellij --layout dev
+ZJ_LOG_FILE=/var/log/syslog zdev
+ZJ_SESSION=api zdev            # un segundo workspace, aparte
 ```
 
-Un alias útil si usas el workspace a diario:
-
-```bash
-alias zdev='zellij --layout dev'
-```
+Lanza con `zdev`, no con `zellij --layout dev`. Este último crea siempre una
+sesión nueva con nombre aleatorio, y Zellij nunca elimina las que dejas
+desconectadas — así que ejecutarlo una vez por terminal te deja un montón de
+workspaces vivos que no ves, cada uno con sus paneles todavía corriendo.
 
 ## Credenciales
 

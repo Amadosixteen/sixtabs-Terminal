@@ -68,18 +68,20 @@ starting `lazydocker`, and names the cause when it is not. See
 | `ZJ_PROJECTS_DIR` | `~/Projects`, else the current directory | `git` and `projects` tabs, `git-overview`, `zj-logs` search root |
 | `ZJ_LOG_FILE` | newest `*.log` under `ZJ_PROJECTS_DIR` (depth 4) | `logs` tab |
 | `ZJ_BIN_DIR` | `~/.local/bin` | where `install.sh` links the scripts |
+| `ZJ_SESSION` | `dev` | session `zdev` attaches to, or creates |
+| `ZJ_LAYOUT` | `dev` | layout `zdev` creates that session with |
 
 Set them in your shell profile, or per invocation:
 
 ```bash
-ZJ_LOG_FILE=/var/log/syslog zellij --layout dev
+ZJ_LOG_FILE=/var/log/syslog zdev
+ZJ_SESSION=api zdev            # a second workspace, kept separate
 ```
 
-A handy alias if you use the workspace daily:
-
-```bash
-alias zdev='zellij --layout dev'
-```
+Launch with `zdev`, not `zellij --layout dev`. The latter always mints a new
+randomly-named session, and Zellij never reaps the ones you detach from — so
+running it once per terminal leaves a pile of live workspaces you cannot see,
+each still running whatever was in its panes.
 
 ## Credentials
 

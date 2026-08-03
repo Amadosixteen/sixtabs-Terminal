@@ -20,7 +20,7 @@ Una tercera para `git status`, otra vez. La cuarta... ¿dónde estaba la cuarta?
 Este repo reemplaza el ritual con una tecla:
 
 ```
-zellij --layout dev
+zdev
 ```
 
 ```
@@ -52,6 +52,14 @@ cd sixtabs-Terminal
 Ese es todo el setup. Prueba antes con `./install.sh --dry-run` si prefieres
 mirar antes de tocar — y todo lo que reemplaza queda respaldado, nunca borrado.
 `./install.sh --uninstall` lo devuelve a como estaba.
+
+`zdev` es uno de los scripts que el instalador enlaza en `~/.local/bin`. Se
+conecta a una única sesión llamada `dev`, y solo la crea si no existe. Importa
+más de lo que parece: `zellij --layout dev` crea una sesión *nueva* con nombre
+aleatorio cada vez, Zellij no elimina nunca las que quedan desconectadas, y los
+paneles de una sesión que nadie está mirando siguen corriendo. Lánzalo una vez
+por terminal durante una tarde y acabas pagando por una docena de workspaces
+que no ves.
 
 Solo [Zellij](https://zellij.dev) es obligatorio. El resto es opcional:
 

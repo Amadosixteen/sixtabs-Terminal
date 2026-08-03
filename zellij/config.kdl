@@ -18,7 +18,7 @@ theme "debian"
 
 // Start plain. Load a workspace layout explicitly when you want one:
 //
-//     zellij --layout dev
+//     zdev
 //
 // Do NOT set `default_layout "dev"` unless you really want every new
 // terminal to spawn a full monitoring stack (btop, lazydocker, lazysql,
