@@ -192,6 +192,12 @@ when configs are migrated between machines with `tar`). Fix:
 `chmod -R u+w ~/.config/lnav` — or delete `formats/default` and
 `configs/default`; lnav regenerates them.
 
+**The monitor tab is missing a box (CPU, mem, net or proc).** btop saves which
+boxes are visible when it exits, in `~/.config/btop/btop.conf` (`shown_boxes`).
+Press `1`–`4` inside btop to toggle cpu/mem/net/proc back on — the state
+persists on quit. This repo deliberately ships no btop config: btop rewrites
+its own file on every exit, so a symlinked one would never stay clean.
+
 **The db tab shows stale connections.** lazysql lists whatever is saved in
 `~/.config/lazysql/config.toml` — that file is yours, not the repo's. Edit it
 to remove connections whose services no longer exist.

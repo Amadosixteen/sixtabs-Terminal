@@ -80,7 +80,7 @@ Construido en Linux, probado en Linux. En macOS casi todo funciona. **WSL2 lo
 corre con obstáculos** (socket de Docker, portapapeles, fuentes) — documentados
 con honestidad, no barridos bajo la alfombra. Windows nativo: no.
 
-Los detalles, las tripas y la resolución de problemas viven en la
+Los detalles y la resolución de problemas viven en la
 **[Guía](docs/GUIA.es.md)**.
 
 ---

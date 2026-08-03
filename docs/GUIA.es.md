@@ -198,6 +198,13 @@ al migrar configs entre máquinas con `tar`). Arreglo:
 `chmod -R u+w ~/.config/lnav` — o borra `formats/default` y
 `configs/default`; lnav los regenera.
 
+**Al tab monitor le falta una caja (CPU, mem, net o proc).** btop guarda qué
+cajas estaban visibles al salir, en `~/.config/btop/btop.conf`
+(`shown_boxes`). Pulsa `1`–`4` dentro de btop para reactivar cpu/mem/net/proc
+— el estado persiste al salir. Este repo no incluye config de btop a
+propósito: btop reescribe su archivo en cada salida, así que un symlink nunca
+se mantendría limpio.
+
 **El tab db muestra conexiones viejas.** lazysql lista lo que haya guardado en
 `~/.config/lazysql/config.toml` — ese archivo es tuyo, no del repo. Edítalo
 para quitar conexiones cuyos servicios ya no existen.
