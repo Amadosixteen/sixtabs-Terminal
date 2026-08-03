@@ -1,189 +1,91 @@
+<div align="center">
+
 # zellij-config
 
-A portable [Zellij](https://zellij.dev) workspace plus matching configuration for
-`lazygit`, `lazydocker` and `lazysql`. No absolute paths, no personal
-directories, no credentials — clone it on any Linux or macOS machine and it
-works, or degrades with a clear message instead of a dead pane.
+**Your entire dev environment. One command. Zero configuration.**
 
-> 🇪🇸 Documentación en español: [README.es.md](README.es.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-2ea44f)](LICENSE)
+[![Platform: Linux](https://img.shields.io/badge/platform-Linux-1793d1)](#-linux-first)
+[![Made with: Zellij](https://img.shields.io/badge/made%20with-Zellij-d70a53)](https://zellij.dev)
+
+🇪🇸 [Léelo en español](README.es.md)
+
+</div>
+
+---
+
+You know the ritual. Terminal one for the containers. Terminal two tailing a log.
+Terminal three for `git status`, again. Terminal four... where was terminal four?
+
+This repo replaces the ritual with a keystroke:
 
 ```
 zellij --layout dev
 ```
 
-## What you get
-
-| Tab | Contents | Falls back to |
-|---|---|---|
-| `monitor` | CPU, memory, disks, network, processes | `btop` → `htop` → `top` |
-| `docker` | interactive container management | `lazydocker` → `docker stats` → shell, with a diagnosis if the daemon is unreachable |
-| `db` | database TUI client | `lazysql` → shell with install hint |
-| `logs` | follows an application log | `lnav` → `less +F` → `tail -F` |
-| `git` | one-line status of every repo in your projects folder, plus a shell | shell |
-| `projects` | a plain shell in your projects folder | current directory |
-
-## Requirements
-
-Only **Zellij** is required. Everything else is optional — each pane checks for
-its tool and explains itself if it is missing.
-
-```bash
-# Zellij (see https://zellij.dev/documentation/installation for all options)
-cargo install --locked zellij
-# or: brew install zellij  /  pacman -S zellij  /  download a release binary
+```
+┃ monitor ┃ docker ┃ db ┃ logs ┃ git ┃ projects ┃
 ```
 
-Optional, in rough order of usefulness:
-[`btop`](https://github.com/aristocratos/btop),
-[`lazygit`](https://github.com/jesseduffield/lazygit),
-[`lazydocker`](https://github.com/jesseduffield/lazydocker),
-[`lnav`](https://lnav.org),
-[`lazysql`](https://github.com/jorgerojas26/lazysql),
-[`fastfetch`](https://github.com/fastfetch-cli/fastfetch).
+Six tabs. Everything already running, already pointed at your work:
 
-## Install
+|   | Tab | What's waiting for you |
+|---|-----|------------------------|
+| 📈 | **monitor** | CPU, memory, disks, network, processes — live |
+| 🐳 | **docker** | Every container: logs, restart, shell in, stats |
+| 🗄️ | **db** | Your databases in a full TUI client |
+| 📜 | **logs** | Your app's log, streaming, searchable |
+| 🌿 | **git** | Every repo's branch and dirty state, refreshed every 5s |
+| 🚀 | **projects** | A shell, already `cd`'d where your code lives |
+
+No absolute paths. No hardcoded projects. No credentials.
+Clone it on any Linux machine and it just... fits.
+
+## Get it
 
 ```bash
-git clone https://github.com/<you>/zellij-config.git
+git clone https://github.com/YOUR_USER/zellij-config.git
 cd zellij-config
-./install.sh --dry-run     # see exactly what would change
 ./install.sh
 ```
 
-The installer symlinks into `$XDG_CONFIG_HOME` (or `~/.config`) and puts four
-helper scripts in `~/.local/bin`. Anything already there is **moved to
-`<file>.backup-<timestamp>`**, never deleted. Re-running is safe.
+That's the whole setup. `./install.sh --dry-run` first if you like watching
+before touching — and everything it replaces is backed up, never deleted.
+`./install.sh --uninstall` puts it all back.
 
-`./install.sh --uninstall` removes the symlinks and restores the most recent
-backup of each file.
+Only [Zellij](https://zellij.dev) is required. Everything else is optional:
 
-## Configuration
+> btop · lazydocker · lazysql · lnav · lazygit
 
-Everything is driven by two optional environment variables. Set them in your
-shell profile, or per invocation.
+Missing one? The pane tells you what it would do, how to get it, and hands you
+a working shell instead. **Nothing here ever dies silently** — that's the
+design rule the whole repo is built around. Even the classic
+*"docker works for root but not for me"* trap gets detected, explained, and
+in most cases fixed automatically.
 
-| Variable | Default | Used by |
-|---|---|---|
-| `ZJ_PROJECTS_DIR` | `~/Projects`, else the current directory | `git` and `projects` tabs, `git-overview` |
-| `ZJ_LOG_FILE` | newest `*.log` under `ZJ_PROJECTS_DIR` (depth 4) | `logs` tab |
+## Make it yours
+
+Two optional variables. That's the entire configuration surface:
 
 ```bash
-export ZJ_PROJECTS_DIR="$HOME/code"
-ZJ_LOG_FILE=/var/log/syslog zellij --layout dev
+export ZJ_PROJECTS_DIR="$HOME/code"     # where your repos live
+export ZJ_LOG_FILE="/path/to/app.log"   # a specific log to follow
 ```
 
-If neither is set, panes simply inherit the directory you launched `zellij`
-from — so `cd ~/some-project && zellij --layout dev` does the sensible thing
-with no configuration at all.
+Set neither, and it finds `~/Projects` and your most recent log on its own.
 
-### Why not `$VAR` directly in the layout?
+## 🐧 Linux first
 
-Zellij's KDL parser does **not** expand environment variables in `cwd` or
-`args`. That is the reason most published layouts end up with somebody's home
-directory baked in. Here, anything needing a runtime value is either wrapped in
-`sh -c` (where the shell expands it) or delegated to a script in `bin/`. Panes
-with no `cwd` inherit the session's working directory.
+Built for Linux, tested on Linux. macOS mostly works. **WSL2 runs it with
+obstacles** (Docker socket, clipboard, fonts) — honestly documented, not
+hand-waved. Native Windows: no.
 
-## Helper scripts
+Details, internals and troubleshooting live in the **[Guide](docs/GUIDE.md)**.
 
-All four work standalone, outside Zellij.
+---
 
-- **`git-overview [dir]`** — table of branch, last commit and dirty-file count
-  for every git repository directly under `dir`. Lists repository *roots* only,
-  so it stays correct when the folder itself is inside a repo.
-- **`zj-logs [file]`** — opens a log in the best available viewer. With no
-  argument it uses `$ZJ_LOG_FILE`, otherwise the most recently modified `*.log`
-  it can find. Prints instructions and drops to a shell rather than exiting.
-- **`zj-cd [dir]`** — starts an interactive shell in the projects directory.
-- **`zj-docker`** — checks that the Docker daemon is actually reachable before
-  starting `lazydocker`, and names the cause when it is not. It distinguishes
-  *account not in the `docker` group* from the far more confusing case where the
-  account **is** in the group but the running process is not — see below.
+<div align="center">
 
-### The `docker` group trap
+MIT — take it, break it, make it yours.
 
-Supplementary groups are assigned when a process is created and cannot be added
-to a running one. If your login session started before `usermod -aG docker` ran,
-every shell it spawns lacks the group, while `id` cheerfully reports you as a
-member. Opening a "new" terminal usually does not help either, because new
-windows attach to the same long-lived terminal server process.
-
-`zj-docker` compares the process's real group list (`id -G`) against the
-account's (`id -nG`) and tells you which case you are in. The fix is to log out
-and back in, `pkill gnome-terminal-server`, or `newgrp docker` for one shell.
-
-## Credentials
-
-`lazysql/config.toml.example` is a template. The installer copies it to
-`~/.config/lazysql/config.toml` **only if that file does not already exist**,
-and the real file is git-ignored, because lazysql stores connection URLs as
-`provider://user:password@host:port/db` in plain text.
-
-Copied, not symlinked — deliberately. A symlink would put your passwords inside
-the repository working tree, one `git add -A` away from being published.
-
-If you ever commit one by accident, rotate those passwords. Deleting the file in
-a later commit does not remove it from git history.
-
-## Notes on the Zellij config
-
-`zellij/config.kdl` is deliberately short. Three choices are worth explaining,
-because each one is a common way a Zellij setup ends up feeling broken:
-
-- **`session_serialization false`.** Zellij's default is to save the live layout
-  to `~/.cache/zellij` and resurrect it on the next run. While you are editing
-  layouts this means your `.kdl` changes appear to do nothing — you keep getting
-  the old session back, with dead command panes marked `start_suspended true`.
-  Turn it on again once your layouts are stable.
-- **`default_layout "default"`.** Setting a heavy workspace as the default makes
-  *every* new terminal spawn a monitoring stack — easily eight extra processes
-  per session. Launch it explicitly with `zellij --layout dev` instead.
-- **No `keybinds` block.** Zellij's configuration plugin writes the entire
-  default keybind table into your config when it saves — roughly 250 lines that
-  change nothing and bury any real customization. Run
-  `zellij setup --dump-config` when you want to read the defaults; only add a
-  `keybinds` block here for bindings you actually change.
-
-## Troubleshooting
-
-**My layout edits do nothing.** Session serialization is resurrecting an old
-session. Confirm with `zellij list-sessions`, then
-`zellij delete-all-sessions`, or clear `~/.cache/zellij`.
-
-**Panes appear dead / suspended.** The pane's command exited. Press `Enter`
-inside it to rerun. If it happens on every start, the command or a path it
-needs is missing — every pane in this repo prints why.
-
-**Helper scripts not found.** `~/.local/bin` is not on your `PATH`. Add
-`export PATH="$HOME/.local/bin:$PATH"` to your shell profile.
-
-**Copying does not reach the system clipboard.** Zellij uses OSC 52 by default,
-which some terminals do not support. Uncomment the `copy_command` line matching
-your session in `zellij/config.kdl` (`xclip` for X11, `wl-copy` for Wayland,
-`pbcopy` for macOS).
-
-**Icons render as boxes.** Set `simplified_ui true` in `zellij/config.kdl`, or
-use a Nerd Font.
-
-## Layout
-
-```
-.
-├── install.sh                    symlink installer (--dry-run, --uninstall)
-├── bin/
-│   ├── git-overview              git status table for a folder of repos
-│   ├── zj-logs                   log viewer with discovery + fallbacks
-│   ├── zj-cd                     shell in the projects directory
-│   └── zj-docker                 Docker TUI with a daemon-reachability check
-├── zellij/
-│   ├── config.kdl                only what differs from the defaults
-│   ├── layouts/dev.kdl           the six-tab workspace
-│   └── themes/debian.kdl         "debian" (red accent) and "tango"
-├── lazygit/config.yml
-├── lazydocker/config.yml
-└── lazysql/config.toml.example   template — real file is git-ignored
-```
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+</div>
